@@ -7,6 +7,7 @@ from sklearn import tree
 from sklearn import cross_validation
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.utils.multiclass import type_of_target
 
 # importing data array
 learning_in = np.genfromtxt('letter-recognition_data.csv', delimiter=',')
@@ -78,6 +79,9 @@ def plot_confusion_matrix(cm, title='confusion matrix', cmap=plt.cm.Blues):
     plt.xlabel('predicted label')
     
 Y_pred = clf_tree.fit(X_train,Y_train).predict(X_test_split)
+a = type_of_target(Y_pred)
+b = type_of_target(Y_test_split)
+print("Hello")
 cm = confusion_matrix(Y_test_split,Y_pred)
 np.set_printoptions(precision=2)
 print('confusion matrix, without normalization')

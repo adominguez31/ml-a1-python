@@ -1,25 +1,34 @@
 from __future__ import division
 
+import string
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import tree
 from sklearn import cross_validation
 from sklearn.preprocessing import OneHotEncoder
-from numpy import str
-#from scipy import stats
 
+# importing data array
 learning_in = np.genfromtxt('letter-recognition_data.csv', delimiter=',')
-learning_in = learning_in[1:-1, :]
+learning_in = learning_in[1::, :]
 
-enc = OneHotEncoder()
-learning_out = enc.fit(np.genfromtxt('letter-recognition_class.csv', delimiter=','),dtype=np.str)
-learning_out = learning_out[1:-1, :]
+# importing class array           
+f = open('letter-recognition_class.csv')
+ltr_lines = f.read().splitlines()
+nmr_lines = np.zeros([len(ltr_lines)-1,1])
 
-#learning_in_norm = stats.zscore(learning_in, axis=1, ddof=1)
+# encoding classifications
+idx = 1
+for i in range(1,len(ltr_lines)-1):
+    nmr_lines[i-1,0] = list(string.ascii_uppercase).index(ltr_lines[idx])
+    idx += 1
+enc = OneHotEncoder(sparse=False)       
+learning_out = enc.fit_transform(nmr_lines)
 
-X_train, X_test_split, Y_train, Y_test_split = cross_validation.train_test_split(learning_in, learning_out[:, 0],
-                                                                                 test_size=.4, random_state=0)
-X_CV, X_test, Y_CV, Y_test = cross_validation.train_test_split(X_test_split, Y_test_split, test_size=.5, random_state=0)
+# cross validation
+X_train, X_test_split, Y_train, Y_test_split = cross_validation.train_test_split(learning_in, learning_out,test_size=.4,
+                                                                                 random_state=0)
+X_CV, X_test, Y_CV, Y_test = cross_validation.train_test_split(X_test_split, Y_test_split, test_size=.5,
+                                                               random_state=0)
 
 print(X_train.shape)
 print(X_CV.shape)
@@ -32,7 +41,9 @@ depth = []
 
 for ind in range(100, X_train.shape[0], 100):
     # slice the data
-    X_discard, X_train_step, Y_discard, Y_train_step = cross_validation.train_test_split(X_train, Y_train,test_size=ind/X_train.shape[0], random_state=0)
+    X_discard, X_train_step, Y_discard, Y_train_step = cross_validation.train_test_split(X_train, Y_train,
+                                                                                         test_size=ind/X_train.shape[0],
+                                                                                         random_state=0)
 
     clf_tree = tree.DecisionTreeClassifier()
     clf_tree = clf_tree.fit(X_train_step, Y_train_step)
@@ -42,15 +53,15 @@ for ind in range(100, X_train.shape[0], 100):
     depth.append(ind)
 
 plt.figure()
-plt.title('Decision Tree Learing Curve ')
-plt.xlabel("Training Examples")
-plt.ylabel("Error")
-plt.ylim(0, .6)
-plt.plot(depth, train_score, 'o-', color="r", label="Training error")
-plt.plot(depth, cv_score, 'o-', color="g", label="Cross Validation error")
-# plt.plot(depth, test_score, 'o-', color="b",label="Test error")
+plt.title('decision tree learning curve ')
+plt.xlabel("training examples")
+plt.ylabel("error")
+plt.plot(depth, train_score, 'o-', color="r", label="training error")
+#plt.plot(depth, cv_score, 'o-', color="g", label="Cross Validation error")
+plt.plot(depth, test_score, 'o-', color="b",label="test error")
 plt.legend(loc="best")
-plt.ylim(0, .6)
+plt.ylim(0,max(train_score))
+plt.show()
 
 best_data_size = (cv_score.index(min(cv_score)) + 1) * 100
 
@@ -61,11 +72,10 @@ train_score = []
 test_score = []
 depth = []
 
-for ind in range(1, num_attrs):
+for ind in range(1, 40):
     # slice the data
     X_discard, X_train_step, Y_discard, Y_train_step = cross_validation.train_test_split(X_train, Y_train,
-                                                                                         test_size=best_data_size /
-                                                                                                   X_train.shape[0],
+                                                                                         test_size=best_data_size/X_train.shape[0],
                                                                                          random_state=0)
 
     clf_tree = tree.DecisionTreeClassifier(max_depth=ind)
@@ -79,13 +89,14 @@ best_depth = cv_score.index(min(cv_score)) + 1
 print(best_depth)
 
 plt.figure()
-plt.title('Decision Tree Error and Depth ')
-plt.xlabel("Tree Depth")
-plt.ylabel("Error")
-plt.ylim(0, .6)
-plt.plot(depth, train_score, 'o-', color="r", label="Training error")
-plt.plot(depth, cv_score, 'o-', color="g", label="Cross Validation error")
-# plt.plot(depth, test_score, 'o-', color="b",label="Test error")
+plt.title('decision tree error and depth ')
+plt.xlabel("tree depth")
+plt.ylabel("error")
+plt.plot(depth, train_score, 'o-', color="r", label="training error")
+#plt.plot(depth, cv_score, 'o-', color="g", label="Cross Validation error")
+plt.plot(depth, test_score, 'o-', color="b",label="test error")
 plt.legend(loc="best")
-plt.ylim(0, .6)
+plt.ylim(0,max(train_score))
 plt.show()
+print("done!")
+

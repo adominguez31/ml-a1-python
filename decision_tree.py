@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import tree
 from sklearn import cross_validation
+from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
 
 # importing data array
@@ -60,7 +61,38 @@ plt.plot(depth, train_score, 'o-', color="r", label="training error")
 #plt.plot(depth, cv_score, 'o-', color="g", label="Cross Validation error")
 plt.plot(depth, test_score, 'o-', color="b",label="test error")
 plt.legend(loc="best")
-plt.ylim(0,max(train_score))
+#plt.ylim(0,max(train_score))
+#plt.show()
+plt.savefig("dt_performance.png",bbox_inches='tight',dpi=100)
+
+# Compute confusion matrix
+def plot_confusion_matrix(cm, title='confusion matrix', cmap=plt.cm.Blues):
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(ltr_lines))
+    plt.xticks(tick_marks, ltr_lines, rotation=45)
+    plt.yticks(tick_marks, ltr_lines)
+    plt.tight_layout()
+    plt.ylabel('true label')
+    plt.xlabel('predicted label')
+    
+Y_pred = clf_tree.fit(X_train,Y_train).predict(X_test_split)
+cm = confusion_matrix(Y_test_split,Y_pred)
+np.set_printoptions(precision=2)
+print('confusion matrix, without normalization')
+print(cm)
+plt.figure()
+plot_confusion_matrix(cm)
+
+# Normalize the confusion matrix by row (i.e by the number of samples
+# in each class)
+cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+print('normalized confusion matrix')
+print(cm_normalized)
+plt.figure()
+plot_confusion_matrix(cm_normalized, title='normalized confusion matrix')
+
 plt.show()
 
 best_data_size = (cv_score.index(min(cv_score)) + 1) * 100
@@ -96,7 +128,8 @@ plt.plot(depth, train_score, 'o-', color="r", label="training error")
 #plt.plot(depth, cv_score, 'o-', color="g", label="Cross Validation error")
 plt.plot(depth, test_score, 'o-', color="b",label="test error")
 plt.legend(loc="best")
-plt.ylim(0,max(train_score))
-plt.show()
+#plt.ylim(0,max(train_score))
+#plt.show()
+plt.savefig("dt_depth.png",bbox_inches='tight',dpi=100)
 print("done!")
 

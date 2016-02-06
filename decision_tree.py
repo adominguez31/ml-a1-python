@@ -1,6 +1,7 @@
 from __future__ import division
 
 import string
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import tree
@@ -9,14 +10,20 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.utils.multiclass import type_of_target
 
-# importing data array
+print("importing data array")
+# import data array
 learning_in = np.genfromtxt('letter-recognition_data.csv', delimiter=',')
-learning_in = learning_in[1::, :]
+learning_in = learning_in[1:]
 
 # importing class array           
 f = open('letter-recognition_class.csv')
 ltr_lines = f.read().splitlines()
-nmr_lines = np.zeros([len(ltr_lines)-1,1])
+nmr_lines = np.zeros((len(ltr_lines)-1,1))
+
+# importing attributes
+f = open('letter-recognition_data.csv')
+attr_lines = f.read().splitlines()
+attr_lines = attr_lines[0].split(',')
 
 # encoding classifications
 idx = 1
@@ -65,24 +72,36 @@ plt.legend(loc="best")
 #plt.ylim(0,max(train_score))
 #plt.show()
 plt.savefig("dt_performance.png",bbox_inches='tight',dpi=100)
-
-# Compute confusion matrix
+'''
+# compute confusion matrix
 def plot_confusion_matrix(cm, title='confusion matrix', cmap=plt.cm.Blues):
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
-    tick_marks = np.arange(len(ltr_lines))
-    plt.xticks(tick_marks, ltr_lines, rotation=45)
-    plt.yticks(tick_marks, ltr_lines)
+    tick_marks = np.arange(len(list(string.ascii_uppercase)))
+    plt.xticks(tick_marks, list(string.ascii_uppercase), rotation=45)
+    plt.yticks(tick_marks, list(string.ascii_uppercase))
     plt.tight_layout()
     plt.ylabel('true label')
     plt.xlabel('predicted label')
+
+def OneHotDecoder(x):
+    y = np.zeros((x.shape[0],1),dtype=int)
+    
+    x_int = x.astype(int)
+    for j in range(0,x_int.shape[0]):
+        x_str = map(str,x_int[j])
+        temp = x_str[0]
+        for i in range(1,len(x_str)):
+            temp = temp + x_str[i]
+        y[j] = int(temp,2)
+        y[j] = math.log(y[j],2)
+    return y;
     
 Y_pred = clf_tree.fit(X_train,Y_train).predict(X_test_split)
-a = type_of_target(Y_pred)
-b = type_of_target(Y_test_split)
-print("Hello")
-cm = confusion_matrix(Y_test_split,Y_pred)
+y_test_cnt = OneHotDecoder(Y_test_split)
+y_pred_cnt = OneHotDecoder(Y_pred)
+cm = confusion_matrix(y_test_cnt,y_pred_cnt)
 np.set_printoptions(precision=2)
 print('confusion matrix, without normalization')
 print(cm)
@@ -98,7 +117,7 @@ plt.figure()
 plot_confusion_matrix(cm_normalized, title='normalized confusion matrix')
 
 plt.show()
-
+'''
 best_data_size = (cv_score.index(min(cv_score)) + 1) * 100
 
 print(best_data_size)
